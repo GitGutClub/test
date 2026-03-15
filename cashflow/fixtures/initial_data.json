@@ -1,0 +1,103 @@
+[
+  {
+    "model": "auth.user",
+    "pk": 1,
+    "fields": {
+      "password": "pbkdf2_sha256$1200000$YokLE5zfwXuKZ2GPBwihmp$5HevvqWBpV+pTEW39vmSrA1OP6rIQk3cJNoldrGzs4c=",
+      "last_login": null,
+      "is_superuser": true,
+      "username": "admin",
+      "first_name": "",
+      "last_name": "",
+      "email": "admin@example.com",
+      "is_staff": true,
+      "is_active": true,
+      "date_joined": "2025-01-01T00:00:00Z"
+    }
+  },
+  {
+    "model": "cashflow.status",
+    "pk": 1,
+    "fields": { "name": "Бизнес" }
+  },
+  {
+    "model": "cashflow.status",
+    "pk": 2,
+    "fields": { "name": "Личное" }
+  },
+  {
+    "model": "cashflow.status",
+    "pk": 3,
+    "fields": { "name": "Налог" }
+  },
+  {
+    "model": "cashflow.type",
+    "pk": 1,
+    "fields": { "name": "Пополнение", "is_income": true }
+  },
+  {
+    "model": "cashflow.type",
+    "pk": 2,
+    "fields": { "name": "Списание", "is_income": false }
+  },
+  {
+    "model": "cashflow.category",
+    "pk": 1,
+    "fields": { "name": "Инфраструктура", "type": 2 }
+  },
+  {
+    "model": "cashflow.category",
+    "pk": 2,
+    "fields": { "name": "Маркетинг", "type": 2 }
+  },
+  {
+    "model": "cashflow.category",
+    "pk": 3,
+    "fields": { "name": "Продажи", "type": 1 }
+  },
+  {
+    "model": "cashflow.category",
+    "pk": 4,
+    "fields": { "name": "Прочие доходы", "type": 1 }
+  },
+  {
+    "model": "cashflow.subcategory",
+    "pk": 1,
+    "fields": { "name": "VPS", "category": 1 }
+  },
+  {
+    "model": "cashflow.subcategory",
+    "pk": 2,
+    "fields": { "name": "Proxy", "category": 1 }
+  },
+  {
+    "model": "cashflow.subcategory",
+    "pk": 3,
+    "fields": { "name": "Farpost", "category": 2 }
+  },
+  {
+    "model": "cashflow.subcategory",
+    "pk": 4,
+    "fields": { "name": "Avito", "category": 2 }
+  },
+  {
+    "model": "cashflow.subcategory",
+    "pk": 5,
+    "fields": { "name": "Онлайн", "category": 3 }
+  },
+  {
+    "model": "cashflow.subcategory",
+    "pk": 6,
+    "fields": { "name": "Розница", "category": 3 }
+  },
+  {
+    "model": "cashflow.subcategory",
+    "pk": 7,
+    "fields": { "name": "Возврат", "category": 4 }
+  },
+  {
+    "model": "cashflow.subcategory",
+    "pk": 8,
+    "fields": { "name": "Проценты", "category": 4 }
+  }
+]

@@ -1,0 +1,138 @@
+{% extends "cashflow/base.html" %}
+{% load static %}
+
+{% block title %}Справочники{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <h1 class="h2 mb-0">Управление справочниками</h1>
+  <a href="{% url 'dashboard' %}" class="btn btn-outline-secondary">Назад</a>
+</div>
+
+<ul class="nav nav-tabs mb-4" id="refTabs" role="tablist">
+  <li class="nav-item" role="presentation">
+    <button class="nav-link active" id="statuses-tab" data-bs-toggle="tab" data-bs-target="#statuses" type="button">Статусы</button>
+  </li>
+  <li class="nav-item" role="presentation">
+    <button class="nav-link" id="types-tab" data-bs-toggle="tab" data-bs-target="#types" type="button">Типы</button>
+  </li>
+  <li class="nav-item" role="presentation">
+    <button class="nav-link" id="categories-tab" data-bs-toggle="tab" data-bs-target="#categories" type="button">Категории</button>
+  </li>
+  <li class="nav-item" role="presentation">
+    <button class="nav-link" id="subcategories-tab" data-bs-toggle="tab" data-bs-target="#subcategories" type="button">Подкатегории</button>
+  </li>
+</ul>
+
+<div class="tab-content" id="refTabsContent">
+  <div class="tab-pane fade show active" id="statuses" role="tabpanel">
+    <div class="card border-0 shadow-sm">
+      <div class="card-header bg-white d-flex justify-content-between align-items-center">
+        <span>Статусы</span>
+        <button type="button" class="btn btn-sm btn-primary" data-ref="status">+ Добавить</button>
+      </div>
+      <div class="card-body p-0">
+        <table class="table table-hover mb-0">
+          <thead class="table-light"><tr><th>ID</th><th>Название</th><th width="120"></th></tr></thead>
+          <tbody id="ref-status-tbody"><tr><td colspan="3" class="text-muted">Загрузка…</td></tr></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+  <div class="tab-pane fade" id="types" role="tabpanel">
+    <div class="card border-0 shadow-sm">
+      <div class="card-header bg-white d-flex justify-content-between align-items-center">
+        <span>Типы</span>
+        <button type="button" class="btn btn-sm btn-primary" data-ref="type">+ Добавить</button>
+      </div>
+      <div class="card-body p-0">
+        <table class="table table-hover mb-0">
+          <thead class="table-light"><tr><th>ID</th><th>Название</th><th width="120"></th></tr></thead>
+          <tbody id="ref-type-tbody"><tr><td colspan="3" class="text-muted">Загрузка…</td></tr></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+  <div class="tab-pane fade" id="categories" role="tabpanel">
+    <div class="card border-0 shadow-sm">
+      <div class="card-header bg-white d-flex justify-content-between align-items-center">
+        <span>Категории</span>
+        <button type="button" class="btn btn-sm btn-primary" data-ref="category">+ Добавить</button>
+      </div>
+      <div class="card-body p-0">
+        <table class="table table-hover mb-0">
+          <thead class="table-light"><tr><th>ID</th><th>Название</th><th>Тип</th><th width="120"></th></tr></thead>
+          <tbody id="ref-category-tbody"><tr><td colspan="4" class="text-muted">Загрузка…</td></tr></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+  <div class="tab-pane fade" id="subcategories" role="tabpanel">
+    <div class="card border-0 shadow-sm">
+      <div class="card-header bg-white d-flex justify-content-between align-items-center">
+        <span>Подкатегории</span>
+        <button type="button" class="btn btn-sm btn-primary" data-ref="subcategory">+ Добавить</button>
+      </div>
+      <div class="card-body p-0">
+        <table class="table table-hover mb-0">
+          <thead class="table-light"><tr><th>ID</th><th>Название</th><th>Категория</th><th width="120"></th></tr></thead>
+          <tbody id="ref-subcategory-tbody"><tr><td colspan="4" class="text-muted">Загрузка…</td></tr></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Модальное окно: добавление/редактирование -->
+<div class="modal fade" id="modal-ref-edit" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="modal-ref-title">Добавить</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <input type="hidden" id="modal-ref-id" value="">
+        <input type="hidden" id="modal-ref-kind" value="">
+        <div class="mb-3" id="wrap-ref-name">
+          <label class="form-label">Название</label>
+          <input type="text" class="form-control" id="modal-ref-name" placeholder="Название">
+        </div>
+        <div class="mb-3 d-none" id="wrap-ref-type">
+          <label class="form-label">Тип</label>
+          <select class="form-select" id="modal-ref-type"></select>
+        </div>
+        <div class="mb-3 d-none" id="wrap-ref-category">
+          <label class="form-label">Категория</label>
+          <select class="form-select" id="modal-ref-category"></select>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
+        <button type="button" class="btn btn-primary" id="btn-modal-ref-save">Сохранить</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Модальное окно: подтверждение удаления -->
+<div class="modal fade" id="modal-ref-delete" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Удалить?</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body" id="modal-ref-delete-body">Элемент будет удалён. Связанные записи могут пострадать.</div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
+        <button type="button" class="btn btn-danger" id="btn-modal-ref-delete-confirm">Удалить</button>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'js/references.js' %}"></script>
+{% endblock %}

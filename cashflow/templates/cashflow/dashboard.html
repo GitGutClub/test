@@ -1,0 +1,155 @@
+{% extends "cashflow/base.html" %}
+{% load static %}
+
+{% block title %}Главная{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-4">
+  <h1 class="h2 mb-0">Записи о движении денежных средств</h1>
+  <a href="{% url 'record_create' %}" class="btn btn-primary">+ Новая запись</a>
+</div>
+
+<!-- Сводные карточки -->
+<div class="row g-3 mb-4" id="summary-cards">
+  <div class="col-12 col-md-4">
+    <div class="card border-0 shadow-sm">
+      <div class="card-body">
+        <h6 class="text-muted text-uppercase small">Баланс</h6>
+        <p class="h4 mb-0" id="summary-balance">—</p>
+      </div>
+    </div>
+  </div>
+  <div class="col-12 col-md-4">
+    <div class="card border-0 shadow-sm">
+      <div class="card-body">
+        <h6 class="text-muted text-uppercase small">Пополнения</h6>
+        <p class="h4 mb-0 text-success" id="summary-income">—</p>
+      </div>
+    </div>
+  </div>
+  <div class="col-12 col-md-4">
+    <div class="card border-0 shadow-sm">
+      <div class="card-body">
+        <h6 class="text-muted text-uppercase small">Списания</h6>
+        <p class="h4 mb-0 text-danger" id="summary-expense">—</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Графики -->
+<div class="row g-3 mb-4">
+  <div class="col-12 col-lg-6">
+    <div class="card border-0 shadow-sm">
+      <div class="card-header bg-white">По категориям</div>
+      <div class="card-body">
+        <canvas id="chart-categories" height="200"></canvas>
+      </div>
+    </div>
+  </div>
+  <div class="col-12 col-lg-6">
+    <div class="card border-0 shadow-sm">
+      <div class="card-header bg-white">Динамика по датам</div>
+      <div class="card-body">
+        <canvas id="chart-dates" height="200"></canvas>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Фильтры -->
+<div class="card border-0 shadow-sm mb-4">
+  <div class="card-header bg-white d-flex justify-content-between align-items-center flex-wrap gap-2">
+    <span>Фильтры</span>
+    <div class="d-flex gap-2">
+      <button type="button" class="btn btn-sm btn-outline-secondary" id="btn-reset-filters">Сбросить</button>
+      <a href="#" class="btn btn-sm btn-outline-primary" id="btn-export-csv">Экспорт CSV</a>
+    </div>
+  </div>
+  <div class="card-body">
+    <div class="row g-2 align-items-end">
+      <div class="col-6 col-md">
+        <label class="form-label small">Дата с</label>
+        <input type="date" class="form-control form-control-sm" id="filter-date-from">
+      </div>
+      <div class="col-6 col-md">
+        <label class="form-label small">Дата по</label>
+        <input type="date" class="form-control form-control-sm" id="filter-date-to">
+      </div>
+      <div class="col-6 col-md">
+        <label class="form-label small">Статус</label>
+        <select class="form-select form-select-sm" id="filter-status">
+          <option value="">Все</option>
+        </select>
+      </div>
+      <div class="col-6 col-md">
+        <label class="form-label small">Тип</label>
+        <select class="form-select form-select-sm" id="filter-type">
+          <option value="">Все</option>
+        </select>
+      </div>
+      <div class="col-6 col-md">
+        <label class="form-label small">Категория</label>
+        <select class="form-select form-select-sm" id="filter-category">
+          <option value="">Все</option>
+        </select>
+      </div>
+      <div class="col-6 col-md">
+        <label class="form-label small">Подкатегория</label>
+        <select class="form-select form-select-sm" id="filter-subcategory">
+          <option value="">Все</option>
+        </select>
+      </div>
+      <div class="col-12 col-md-auto">
+        <button type="button" class="btn btn-primary btn-sm w-100" id="btn-apply-filters">Применить</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Таблица -->
+<div class="card border-0 shadow-sm">
+  <div class="card-body p-0">
+    <div class="table-responsive">
+      <table class="table table-hover align-middle mb-0">
+        <thead class="table-light">
+          <tr>
+            <th>Дата</th>
+            <th>Статус</th>
+            <th>Тип</th>
+            <th>Категория</th>
+            <th>Подкатегория</th>
+            <th class="text-end">Сумма</th>
+            <th>Комментарий</th>
+            <th width="100"></th>
+          </tr>
+        </thead>
+        <tbody id="records-tbody">
+          <tr><td colspan="8" class="text-center text-muted py-5">Загрузка…</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <nav class="p-3 border-top" id="pagination-wrap" aria-label="Пагинация"></nav>
+  </div>
+</div>
+
+<div class="modal fade" id="modal-delete" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Удалить запись?</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">Запись будет удалена без возможности восстановления.</div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
+        <button type="button" class="btn btn-danger" id="btn-confirm-delete">Удалить</button>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'js/dashboard.js' %}"></script>
+{% endblock %}
