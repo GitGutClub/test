@@ -73,9 +73,9 @@
   });
 
   function initForm() {
-    const data = window.recordFormData;
+    const recordData = window.recordFormData;
     const submitBtn = form.querySelector('button[type="submit"]');
-    if (!data) {
+    if (!recordData) {
       const today = new Date().toISOString().slice(0, 10);
       document.getElementById('id_date').value = today;
       if (submitBtn) submitBtn.disabled = true;
@@ -85,9 +85,9 @@
       ]).then(() => { if (submitBtn) submitBtn.disabled = false; }).catch(() => { if (submitBtn) submitBtn.disabled = false; });
       return;
     }
-    document.getElementById('id_date').value = data.date;
-    document.getElementById('id_amount').value = data.amount;
-    document.getElementById('id_comment').value = data.comment || '';
+    document.getElementById('id_date').value = recordData.date;
+    document.getElementById('id_amount').value = recordData.amount;
+    document.getElementById('id_comment').value = recordData.comment || '';
 
     Promise.all([
       fetch(API + '/statuses/').then((r) => r.json()).then((d) => d.results || d || []),
@@ -99,7 +99,7 @@
         const o = document.createElement('option');
         o.value = s.id;
         o.textContent = s.name;
-        if (s.id === data.status) o.selected = true;
+        if (s.id === recordData.status) o.selected = true;
         selStatus.appendChild(o);
       });
       typeSelect.innerHTML = '<option value="">Выберите тип</option>';
@@ -107,34 +107,34 @@
         const o = document.createElement('option');
         o.value = t.id;
         o.textContent = t.name;
-        if (t.id === data.type) o.selected = true;
+        if (t.id === recordData.type) o.selected = true;
         typeSelect.appendChild(o);
       });
 
-      const typeId = data.type;
+      const typeId = recordData.type;
       if (!typeId) return;
-      return fetch(API + '/categories/?type_id=' + typeId).then((r) => r.json()).then((data) => {
-        const categories = data.results || data || [];
+      return fetch(API + '/categories/?type_id=' + typeId).then((r) => r.json()).then((categoriesResp) => {
+        const categories = categoriesResp.results || categoriesResp || [];
         categorySelect.innerHTML = '<option value="">Выберите категорию</option>';
         categorySelect.disabled = false;
         categories.forEach((c) => {
           const o = document.createElement('option');
           o.value = c.id;
           o.textContent = c.name;
-          if (c.id === data.category) o.selected = true;
+          if (c.id === recordData.category) o.selected = true;
           categorySelect.appendChild(o);
         });
-        const categoryId = data.category;
+        const categoryId = recordData.category;
         if (!categoryId) return;
-        return fetch(API + '/subcategories/?category_id=' + categoryId).then((r) => r.json()).then((data) => {
-          const subcategories = data.results || data || [];
+        return fetch(API + '/subcategories/?category_id=' + categoryId).then((r) => r.json()).then((subcategoriesResp) => {
+          const subcategories = subcategoriesResp.results || subcategoriesResp || [];
           subcategorySelect.innerHTML = '<option value="">Выберите подкатегорию</option>';
           subcategorySelect.disabled = false;
           subcategories.forEach((s) => {
             const o = document.createElement('option');
             o.value = s.id;
             o.textContent = s.name;
-            if (s.id === data.subcategory) o.selected = true;
+            if (s.id === recordData.subcategory) o.selected = true;
             subcategorySelect.appendChild(o);
           });
         });

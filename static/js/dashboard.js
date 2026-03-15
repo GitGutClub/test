@@ -49,6 +49,8 @@
   let chartDates = null;
   let currentPage = 1;
   let deleteTargetId = null;
+  let allCategories = [];
+  let allSubcategories = [];
 
   function buildParams() {
     const p = new URLSearchParams();
@@ -68,6 +70,37 @@
     return p;
   }
 
+  function fillSelect(id, list, firstOption) {
+    const el = document.getElementById(id);
+    if (!el) return;
+    el.innerHTML = firstOption || '<option value="">Все</option>';
+    (list || []).forEach((item) => {
+      const opt = document.createElement('option');
+      opt.value = item.id;
+      opt.textContent = item.name;
+      el.appendChild(opt);
+    });
+  }
+
+  function updateCategoryFilterByType() {
+    const typeId = document.getElementById('filter-type').value;
+    const categories = typeId
+      ? allCategories.filter((c) => String(c.type) === String(typeId))
+      : allCategories;
+    fillSelect('filter-category', categories, '<option value="">Все</option>');
+    document.getElementById('filter-category').value = '';
+    updateSubcategoryFilterByCategory();
+  }
+
+  function updateSubcategoryFilterByCategory() {
+    const categoryId = document.getElementById('filter-category').value;
+    const subcategories = categoryId
+      ? allSubcategories.filter((s) => String(s.category) === String(categoryId))
+      : allSubcategories;
+    fillSelect('filter-subcategory', subcategories, '<option value="">Все</option>');
+    document.getElementById('filter-subcategory').value = '';
+  }
+
   function loadRefs() {
     return Promise.all([
       fetch(API + '/statuses/').then(r => r.json()).then(d => d.results || d || []),
@@ -75,22 +108,13 @@
       fetch(API + '/categories/').then(r => r.json()).then(d => d.results || d || []),
       fetch(API + '/subcategories/').then(r => r.json()).then(d => d.results || d || []),
     ]).then(([statuses, types, categories, subcategories]) => {
-      const sel = (id, list, first) => {
-        const el = document.getElementById(id);
-        if (!el) return;
-        el.innerHTML = first ? first : '<option value="">Все</option>';
-        list.forEach((item) => {
-          const opt = document.createElement('option');
-          opt.value = item.id;
-          opt.textContent = item.name;
-          el.appendChild(opt);
-        });
-      };
-      sel('filter-status', statuses, '<option value="">Все</option>');
-      sel('filter-type', types, '<option value="">Все</option>');
-      sel('filter-category', categories, '<option value="">Все</option>');
-      sel('filter-subcategory', subcategories, '<option value="">Все</option>');
-      return { statuses, types, categories, subcategories };
+      allCategories = categories || [];
+      allSubcategories = subcategories || [];
+      fillSelect('filter-status', statuses, '<option value="">Все</option>');
+      fillSelect('filter-type', types, '<option value="">Все</option>');
+      fillSelect('filter-category', allCategories, '<option value="">Все</option>');
+      fillSelect('filter-subcategory', allSubcategories, '<option value="">Все</option>');
+      return { statuses, types, categories: allCategories, subcategories: allSubcategories };
     });
   }
 
@@ -205,6 +229,7 @@
     document.getElementById('filter-type').value = '';
     document.getElementById('filter-category').value = '';
     document.getElementById('filter-subcategory').value = '';
+    updateCategoryFilterByType();
     currentPage = 1;
     loadRecords();
     loadSummary();
@@ -235,6 +260,18 @@
   });
 
   loadRefs().then(() => {
+    document.getElementById('filter-type').addEventListener('change', () => {
+      updateCategoryFilterByType();
+      currentPage = 1;
+      loadRecords();
+      loadSummary();
+    });
+    document.getElementById('filter-category').addEventListener('change', () => {
+      updateSubcategoryFilterByCategory();
+      currentPage = 1;
+      loadRecords();
+      loadSummary();
+    });
     loadRecords();
     loadSummary();
   });

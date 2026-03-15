@@ -29,7 +29,10 @@
           </li>
           {% if user.is_authenticated %}
           <li class="nav-item ms-auto">
-            <a class="nav-link" href="{% url 'logout' %}">Выход ({{ user.username }})</a>
+            <form action="{% url 'logout' %}" method="post" class="d-inline">
+              {% csrf_token %}
+              <button type="submit" class="nav-link btn btn-link border-0 p-0">Выход ({{ user.username }})</button>
+            </form>
           </li>
           {% endif %}
         </ul>

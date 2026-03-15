@@ -247,3 +247,92 @@ class CashFlowAPITests(TestCase):
         self.assertIn('expense_total', r.data)
         self.assertIn('by_category', r.data)
         self.assertIn('by_date', r.data)
+
+    def test_update_record_success(self):
+        record = CashFlowRecord.objects.create(
+            status=self.status,
+            type=self.type_expense,
+            category=self.category,
+            subcategory=self.subcategory,
+            amount=Decimal('100.00'),
+        )
+        data = {
+            'status': self.status.id,
+            'type': self.type_expense.id,
+            'category': self.category.id,
+            'subcategory': self.subcategory.id,
+            'amount': '350.00',
+            'date': '2025-02-10',
+            'comment': 'Updated',
+        }
+        r = self.client.put(f'/api/records/{record.id}/', data, format='json')
+        self.assertEqual(r.status_code, status.HTTP_200_OK)
+        record.refresh_from_db()
+        self.assertEqual(record.amount, Decimal('350.00'))
+        self.assertEqual(record.comment, 'Updated')
+
+    def test_update_record_invalid_category_rejected(self):
+        type_income = Type.objects.create(name='Пополнение', is_income=True)
+        cat_income = Category.objects.create(name='Доходы', type=type_income)
+        record = CashFlowRecord.objects.create(
+            status=self.status,
+            type=self.type_expense,
+            category=self.category,
+            subcategory=self.subcategory,
+            amount=Decimal('100.00'),
+        )
+        data = {
+            'status': self.status.id,
+            'type': self.type_expense.id,
+            'category': cat_income.id,
+            'subcategory': self.subcategory.id,
+            'amount': '100.00',
+            'date': record.date.isoformat(),
+        }
+        r = self.client.put(f'/api/records/{record.id}/', data, format='json')
+        self.assertEqual(r.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertIn('category', r.data)
+
+    def test_delete_record_success(self):
+        record = CashFlowRecord.objects.create(
+            status=self.status,
+            type=self.type_expense,
+            category=self.category,
+            subcategory=self.subcategory,
+            amount=Decimal('100.00'),
+        )
+        r = self.client.delete(f'/api/records/{record.id}/')
+        self.assertEqual(r.status_code, status.HTTP_204_NO_CONTENT)
+        self.assertEqual(CashFlowRecord.objects.filter(pk=record.id).count(), 0)
+
+
+class CashFlowEditFormViewTests(TestCase):
+    """Страница редактирования записи: в контексте передаются category и subcategory для подстановки в форму."""
+
+    def setUp(self):
+        self.user = User.objects.create_user(username='testuser', password='testpass123')
+        self.status = Status.objects.create(name='Бизнес')
+        self.type_expense = Type.objects.create(name='Списание', is_income=False)
+        self.category = Category.objects.create(name='Маркетинг', type=self.type_expense)
+        self.subcategory = Subcategory.objects.create(name='Avito', category=self.category)
+        self.record = CashFlowRecord.objects.create(
+            status=self.status,
+            type=self.type_expense,
+            category=self.category,
+            subcategory=self.subcategory,
+            amount=Decimal('100.00'),
+        )
+
+    def test_edit_form_returns_record_json_with_category_and_subcategory(self):
+        from django.test import Client
+        from django.urls import reverse
+        client = Client()
+        client.force_login(self.user)
+        url = reverse('record_edit', kwargs={'pk': self.record.pk})
+        r = client.get(url)
+        self.assertEqual(r.status_code, 200)
+        self.assertIn(b'recordFormData', r.content)
+        self.assertIn(str(self.record.category_id).encode(), r.content)
+        self.assertIn(str(self.record.subcategory_id).encode(), r.content)
+        self.assertIn(str(self.record.status_id).encode(), r.content)
+        self.assertIn(str(self.record.type_id).encode(), r.content)
